@@ -1,0 +1,21 @@
+PATH
+  remote: .
+  specs:
+    redi_set (0.0.0)
+      hiredis
+      redis
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    hiredis (0.6.3)
+    redis (4.2.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  redi_set!
+
+BUNDLED WITH
+   2.1.4

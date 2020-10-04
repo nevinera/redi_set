@@ -13,4 +13,7 @@ Gem::Specification.new do |s|
   s.license = "MIT"
 
   s.files = Dir["LICENSE", "README.md", "lib/**/*"]
+
+  s.add_dependency "redis"
+  s.add_dependency "hiredis"
 end
