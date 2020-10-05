@@ -2,66 +2,85 @@ require "spec_helper"
 require "redis"
 
 RSpec.describe RediSet::Query do
-  let(:query_data) { Hash[foo: [:a, :b], bar: [:x]] }
-  subject(:query) { RediSet::Query.new(query_data) }
+  describe ".from_hash" do
+    subject(:from_hash) { RediSet::Query.from_hash(hash) }
 
-  describe "#constraints" do
-    subject(:constraints) { query.constraints }
-    it "produces the expected constraints" do
-      expect(constraints.map(&:attribute)).to contain_exactly(:foo, :bar)
-      expect(constraints.map(&:values)).to contain_exactly([:a, :b], [:x])
+    context "for a simple hash" do
+      let(:hash) { Hash[a: [1], b: [2]] }
+
+      it "builds the expected query" do
+        expect(from_hash.constraints.map(&:attribute)).to eq([:a, :b])
+        expect(from_hash.constraints.map(&:values)).to eq([[1], [2]])
+      end
+    end
+
+    context "for a complex hash" do
+      let(:hash) { Hash[a: [1, :b], b: [3], c: "4", d: (1..4)] }
+
+      it "builds the expected query" do
+        expect(from_hash.constraints.map(&:attribute)).to eq([:a, :b, :c, :d])
+        expect(from_hash.constraints.map(&:values)).to eq([[1, :b], [3], ["4"], [1, 2, 3, 4]])
+      end
     end
   end
 
   describe "#execute" do
+    let(:con_foo) do
+      instance_double(RediSet::Constraint,
+                      requires_union?: true,
+                      store_union: true,
+                      intersection_key: "key_foo")
+    end
+
+    let(:con_bar) do
+      instance_double(RediSet::Constraint,
+                      requires_union?: false,
+                      store_union: true,
+                      intersection_key: "key_bar")
+    end
+
+    let(:constraints) { [con_foo, con_bar] }
+    subject(:query) { RediSet::Query.new(constraints) }
+
+    let(:results) { ["x", "y", "z"] }
     let(:redis) { instance_double(Redis) }
+    before { allow(redis).to receive(:multi).and_yield.and_return([results]) }
+    before { allow(redis).to receive(:sinter).and_return(results) }
 
     context "for a simple constraint" do
-      let(:query_data) { Hash[foo: [:a]] }
-      let(:results) { ["x", "y", "z"] }
+      let(:constraints) { [con_bar] }
 
       it "makes a single sinter call and returns the results" do
-        expect(redis).to receive(:sinter).with(["rs.attr:foo:a"]).and_return(results)
-        expect(redis).to receive(:multi).and_yield.and_return([results])
-        expect(redis).not_to receive(:sunionstore)
-        expect(redis).not_to receive(:expire)
-
         expect(query.execute(redis)).to eq(results)
+
+        expect(redis).to have_received(:multi)
+        expect(con_bar).not_to have_received(:store_union)
+        expect(redis).to have_received(:sinter).with(["key_bar"])
       end
     end
 
-    context "for a set of simple constraints" do
-      let(:query_data) { Hash[foo: [:a], bar: [:b], baz: [:c]] }
-      let(:results) { ["x", "y", "z"] }
+    context "for a complex constraint" do
+      let(:constraints) { [con_foo] }
 
-      it "makes a single sinter call and returns the results" do
-        expect(redis).to receive(:sinter).
-          with(["rs.attr:foo:a", "rs.attr:bar:b", "rs.attr:baz:c"]).
-          and_return(results)
-        expect(redis).to receive(:multi).and_yield.and_return([results])
-        expect(redis).not_to receive(:sunionstore)
-        expect(redis).not_to receive(:expire)
-
+      it "unions and then intersects the result" do
         expect(query.execute(redis)).to eq(results)
+
+        expect(redis).to have_received(:multi)
+        expect(con_foo).to have_received(:store_union)
+        expect(redis).to have_received(:sinter).with(["key_foo"])
       end
     end
 
-    context "for a complex set of constraints" do
-      let(:query_data) { Hash[foo: [:a], bar: [:b, :c]] }
-      let(:fooq) { query.constraints.first }
-      let(:barq) { query.constraints.last }
-      let(:results) { ["x", "y", "z"] }
+    context "for a varied set of constraints" do
+      let(:constraints) { [con_foo, con_bar] }
 
       it "makes the appropropriate union calls before intersecting" do
-        expect(redis).to receive(:sunionstore).with(barq.union_key, *barq.set_keys)
-        expect(redis).to receive(:expire).with(barq.union_key, 60)
-
-        expect(redis).to receive(:sinter).
-          with([fooq.set_keys.first, barq.union_key]).
-          and_return(results)
-        expect(redis).to receive(:multi).and_yield.and_return([results])
-
         expect(query.execute(redis)).to eq(results)
+
+        expect(redis).to have_received(:multi)
+        expect(con_foo).to have_received(:store_union)
+        expect(con_bar).not_to have_received(:store_union)
+        expect(redis).to have_received(:sinter).with(["key_foo", "key_bar"])
       end
     end
   end

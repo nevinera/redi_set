@@ -1,22 +1,23 @@
 module RediSet
   class Query
-    def initialize(details)
-      @constraints = details.map { |key, val| Constraint.new(attribute: key, values: val) }
-    end
-
     attr_reader :constraints
 
-    def execute(redis)
-      multi_response = redis.multi do
-        constraints.select { |c| c.requires_union? }.each do |c|
-          redis.sunionstore c.union_key, *c.set_keys
-          redis.expire(c.union_key, 60)
-        end
-
-        redis.sinter(constraints.map(&:intersection_key))
+    def self.from_hash(constraint_hash)
+      constraints = constraint_hash.map do |key, val|
+        Constraint.new(attribute: key, values: Array(val))
       end
+      RediSet::Query.new(constraints)
+    end
 
-      multi_response.last
+    def initialize(constraints)
+      @constraints = constraints
+    end
+
+    def execute(redis)
+      redis.multi do
+        constraints.select(&:requires_union?).each { |c| c.store_union(redis) }
+        redis.sinter(constraints.map(&:intersection_key))
+      end.last
     end
   end
 end
