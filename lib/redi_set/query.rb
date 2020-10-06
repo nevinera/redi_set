@@ -4,7 +4,9 @@ module RediSet
 
     def self.from_hash(constraint_hash)
       constraints = constraint_hash.map do |key, val|
-        Constraint.new(attribute: key, values: Array(val))
+        attribute = Attribute.new(name: key)
+        qualities = Array(val).map { |v| Quality.new(attribute: attribute, name: v) }
+        Constraint.new(qualities: qualities)
       end
       RediSet::Query.new(constraints)
     end

@@ -9,8 +9,9 @@ RSpec.describe RediSet::Query do
       let(:hash) { Hash[a: [1], b: [2]] }
 
       it "builds the expected query" do
-        expect(from_hash.constraints.map(&:attribute)).to eq([:a, :b])
-        expect(from_hash.constraints.map(&:values)).to eq([[1], [2]])
+        expect(from_hash.constraints.map(&:attribute).map(&:name)).to eq([:a, :b])
+        expect(from_hash.constraints[0].qualities.map(&:name)).to eq([1])
+        expect(from_hash.constraints[1].qualities.map(&:name)).to eq([2])
       end
     end
 
@@ -18,8 +19,11 @@ RSpec.describe RediSet::Query do
       let(:hash) { Hash[a: [1, :b], b: [3], c: "4", d: (1..4)] }
 
       it "builds the expected query" do
-        expect(from_hash.constraints.map(&:attribute)).to eq([:a, :b, :c, :d])
-        expect(from_hash.constraints.map(&:values)).to eq([[1, :b], [3], ["4"], [1, 2, 3, 4]])
+        expect(from_hash.constraints.map(&:attribute).map(&:name)).to eq([:a, :b, :c, :d])
+        expect(from_hash.constraints[0].qualities.map(&:name)).to eq([1, :b])
+        expect(from_hash.constraints[1].qualities.map(&:name)).to eq([3])
+        expect(from_hash.constraints[2].qualities.map(&:name)).to eq(["4"])
+        expect(from_hash.constraints[3].qualities.map(&:name)).to eq([1, 2, 3, 4])
       end
     end
   end

@@ -4,37 +4,40 @@ module RediSet
   class Constraint
     UNION_EXPIRATION_PERIOD = 60 # seconds
 
-    def initialize(attribute:, values:)
-      @attribute = attribute
-      @values = values
+    def initialize(qualities:)
+      @qualities = qualities
+
+      if qualities.length < 1
+        raise ArgumentError, "A constraint must have at least one quality"
+      elsif qualities.map(&:attribute).uniq.length != 1
+        raise ArgumentError, "All qualities in a constraint must have matching attributes"
+      end
     end
 
-    attr_reader :attribute, :values
+    attr_reader :qualities
+
+    def attribute
+      qualities.first.attribute
+    end
 
     def requires_union?
-      values.length > 1
+      qualities.length > 1
     end
 
     def intersection_key
-      if values.empty?
-        nil
-      elsif requires_union?
+      if requires_union?
         union_key
       else
-        set_keys.first
+        qualities.first.key
       end
     end
 
     def store_union(redis)
-      redis.sunionstore union_key, *set_keys
+      redis.sunionstore union_key, qualities.map(&:key)
       redis.expire(union_key, UNION_EXPIRATION_PERIOD)
     end
 
     private
-
-    def set_keys
-      @_set_keys ||= values.map { |v| "#{RediSet.prefix}.attr:#{attribute}:#{v}" }
-    end
 
     def union_key
       @_key ||= "#{RediSet.prefix}.union:#{SecureRandom.uuid}"
