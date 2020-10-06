@@ -10,5 +10,12 @@ module RediSet
     def key
       @_key ||= "#{RediSet.prefix}.attr:#{attribute.name}:#{name}"
     end
+
+    def set_all!(redis, ids)
+      redis.multi do
+        redis.del(key)
+        redis.sadd(key, ids)
+      end
+    end
   end
 end
