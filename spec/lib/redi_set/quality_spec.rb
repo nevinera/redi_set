@@ -24,4 +24,32 @@ RSpec.describe RediSet::Quality do
       expect(redis).to have_received(:sadd).with(quality.key, ids)
     end
   end
+
+  describe ".collect_from_details" do
+    subject(:collected) { RediSet::Quality.collect_from_details(details) }
+    let(:qheld) { collected.first }
+    let(:qlacked) { collected.last }
+
+    def parts_of(quality)
+      [quality.attribute.name, quality.name]
+    end
+
+    context "for an empty hash" do
+      let(:details) { Hash.new }
+      it { is_expected.to eq([[], []]) }
+    end
+
+    context "for a hash with empty values" do
+      let(:details) { Hash[a: {}, b: {}] }
+      it { is_expected.to eq([[], []]) }
+    end
+
+    context "for a properly nested hash" do
+      let(:details) { Hash[a: {x: true, y: false}, b: {}, c: {z: true}] }
+      it "collects as expected" do
+        expect(qheld.map { |q| parts_of(q) }).to eq([[:a, :x], [:c, :z]])
+        expect(qlacked.map { |q| parts_of(q) }).to eq([[:a, :y]])
+      end
+    end
+  end
 end
