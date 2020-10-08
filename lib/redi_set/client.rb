@@ -13,5 +13,15 @@ module RediSet
       quality = Quality.new(attribute: attribute, name: quality_name)
       quality.set_all!(@redis, ids)
     end
+
+    # details here is a three-layer hash: attribute_name => quality_name => boolean.
+    # only specified attribute/qualities will be updated.
+    def set_details!(id, details)
+      possessed_qualities, lacked_qualities = Quality.collect_from_details(details)
+      @redis.multi do
+        possessed_qualities.each { |q| @redis.sadd(q.key, id) }
+        lacked_qualities.each { |q| @redis.srem(q.key, id) }
+      end
+    end
   end
 end

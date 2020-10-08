@@ -36,4 +36,21 @@ RSpec.describe RediSet::Client do
       client.set_all!("foo", "bar", ids)
     end
   end
+
+  describe "#set_details!" do
+    let(:id) { 123456789 }
+    let(:details) { Hash[a: { a: true, c: false }, b: { b: true, d: false }] }
+    let(:result) { [:OK, :OK, :OK, :OK] }
+
+    it "sends the right redis commands" do
+      expect(fake_redis).to receive(:multi).and_yield.and_return(result)
+      expect(fake_redis).to receive(:sadd).with("rs.attr:a:a", id)
+      expect(fake_redis).to receive(:sadd).with("rs.attr:b:b", id)
+      expect(fake_redis).to receive(:srem).with("rs.attr:a:c", id)
+      expect(fake_redis).to receive(:srem).with("rs.attr:b:d", id)
+
+      expect(client.set_details!(id, details)).to eq(result)
+
+    end
+  end
 end
