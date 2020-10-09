@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "redi_set"
-  s.version = "0.0.0"
+  s.version = "0.1.1"
   s.summary = "A set-based redis query engine"
   s.description = <<~DESC
     A redis-backed library that makes it easy to find members of a population that
