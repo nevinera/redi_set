@@ -1,6 +1,5 @@
 inherit_from:
   - .rubocop_airbnb.yml
-  - .rubocop_todo.yml
 
 RSpec/EmptyLineAfterFinalLet:
   Enabled: false

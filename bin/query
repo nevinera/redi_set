@@ -7,15 +7,15 @@ require_relative "../lib/redi_set"
 query_text = ARGF.read
 query_data = YAML.safe_load(query_text)
 
-$stderr.puts "Performing this query:"
+warn "Performing this query:"
 query_data.each_pair do |attribute, qualities|
-  $stderr.puts "  #{attribute}: #{Array(qualities).join(', ')}"
+  warn "  #{attribute}: #{Array(qualities).join(', ')}"
 end
-$stderr.puts "\n"
+warn "\n"
 
 redis = Redis.new
 rs = RediSet::Client.new(redis: redis)
 results = rs.match(query_data)
-$stderr.puts "found #{results.length} matches"
+warn "found #{results.length} matches"
 
 results.each { |id| puts id }
