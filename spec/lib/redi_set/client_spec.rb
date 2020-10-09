@@ -8,6 +8,22 @@ RSpec.describe RediSet::Client do
 
   subject(:client) { RediSet::Client.new(redis_config: config) }
 
+  describe "#initialize" do
+    it "holds a supplied redis client" do
+      client = RediSet::Client.new(redis: fake_redis)
+      expect(client.redis).to eq(fake_redis)
+    end
+
+    it "builds a redis from a supplied config hash" do
+      client = RediSet::Client.new(redis_config: config)
+      expect(client.redis).to eq(fake_redis)
+    end
+
+    it "fails properly if neither redis nor config is supplied" do
+      expect { RediSet::Client.new }.to raise_error(ArgumentError, /redis or redis_config/)
+    end
+  end
+
   describe "#match" do
     let(:constraints) { Hash[foo: :a, bar: [1, 2]] }
     let(:fake_result) { %w(a b c d e) }
