@@ -1,6 +1,9 @@
 require "spec_helper"
 
 RSpec.describe RediSet::Constraint do
+  subject(:constraint) do
+    RediSet::Constraint.new(qualities: qualities)
+  end
   let(:attribute) { RediSet::Attribute.new(name: "foo") }
   let(:q1) { RediSet::Quality.new(attribute: attribute, name: "a") }
   let(:q2) { RediSet::Quality.new(attribute: attribute, name: "b") }
@@ -11,10 +14,6 @@ RSpec.describe RediSet::Constraint do
   before { allow(SecureRandom).to receive(:uuid).and_return(uuid) }
 
   before { allow(RediSet).to receive(:prefix).and_return("pre") }
-
-  subject(:constraint) do
-    RediSet::Constraint.new(qualities: qualities)
-  end
 
   describe "#initialize" do
     subject(:init) { -> { RediSet::Constraint.new(qualities: qualities) } }

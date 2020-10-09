@@ -2,11 +2,10 @@ require "spec_helper"
 require "redis"
 
 RSpec.describe RediSet::Client do
+  subject(:client) { RediSet::Client.new(redis_config: config) }
   let(:config) { Hash[foo: :bar] }
   let(:fake_redis) { instance_double(Redis) }
   before { allow(Redis).to receive(:new).and_return(fake_redis) }
-
-  subject(:client) { RediSet::Client.new(redis_config: config) }
 
   describe "#initialize" do
     it "holds a supplied redis client" do
