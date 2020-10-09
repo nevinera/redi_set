@@ -45,7 +45,7 @@ RSpec.describe RediSet::Quality do
     end
 
     context "for a properly nested hash" do
-      let(:details) { Hash[a: {x: true, y: false}, b: {}, c: {z: true}] }
+      let(:details) { Hash[a: { x: true, y: false }, b: {}, c: { z: true }] }
       it "collects as expected" do
         expect(qheld.map { |q| parts_of(q) }).to eq([[:a, :x], [:c, :z]])
         expect(qlacked.map { |q| parts_of(q) }).to eq([[:a, :y]])
