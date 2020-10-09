@@ -7,9 +7,9 @@ attribute_count = ARGV.shift&.to_i || 200
 qualities_per_attribute = ARGV.shift&.to_i || 2
 entity_count = ARGV.shift&.to_i || 100_000
 
-$stderr.puts "loading #{attribute_count} attributes"
-$stderr.puts "  with #{qualities_per_attribute} value each"
-$stderr.puts "  for #{entity_count} entities"
+warn "loading #{attribute_count} attributes"
+warn "  with #{qualities_per_attribute} value each"
+warn "  for #{entity_count} entities"
 
 redis = Redis.new
 rs = RediSet::Client.new(redis: redis)

@@ -29,6 +29,7 @@ RSpec.describe RediSet::Query do
   end
 
   describe "#execute" do
+    subject(:query) { RediSet::Query.new(constraints) }
     let(:con_foo) do
       instance_double(RediSet::Constraint,
                       requires_union?: true,
@@ -44,12 +45,12 @@ RSpec.describe RediSet::Query do
     end
 
     let(:constraints) { [con_foo, con_bar] }
-    subject(:query) { RediSet::Query.new(constraints) }
-
     let(:results) { ["x", "y", "z"] }
     let(:redis) { instance_double(Redis) }
-    before { allow(redis).to receive(:multi).and_yield.and_return([results]) }
-    before { allow(redis).to receive(:sinter).and_return(results) }
+    before do
+      allow(redis).to receive(:multi).and_yield.and_return([results])
+      allow(redis).to receive(:sinter).and_return(results)
+    end
 
     context "for a simple constraint" do
       let(:constraints) { [con_bar] }

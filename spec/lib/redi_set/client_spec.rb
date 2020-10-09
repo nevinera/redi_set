@@ -2,11 +2,10 @@ require "spec_helper"
 require "redis"
 
 RSpec.describe RediSet::Client do
+  subject(:client) { RediSet::Client.new(redis_config: config) }
   let(:config) { Hash[foo: :bar] }
   let(:fake_redis) { instance_double(Redis) }
   before { allow(Redis).to receive(:new).and_return(fake_redis) }
-
-  subject(:client) { RediSet::Client.new(redis_config: config) }
 
   describe "#initialize" do
     it "holds a supplied redis client" do
@@ -44,8 +43,8 @@ RSpec.describe RediSet::Client do
       expect(RediSet::Attribute).to receive(:new).with(name: "foo").and_return(attribute)
 
       quality = instance_double(RediSet::Quality, name: "bar")
-      expect(RediSet::Quality).to receive(:new)
-        .with(attribute: attribute, name: "bar").and_return(quality)
+      expect(RediSet::Quality).to receive(:new).
+        with(attribute: attribute, name: "bar").and_return(quality)
 
       expect(quality).to receive(:set_all!).with(fake_redis, ids)
 
@@ -66,7 +65,6 @@ RSpec.describe RediSet::Client do
       expect(fake_redis).to receive(:srem).with("rs.attr:b:d", id)
 
       expect(client.set_details!(id, details)).to eq(result)
-
     end
   end
 end

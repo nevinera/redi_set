@@ -1,0 +1,11 @@
+inherit_from:
+  - .rubocop_airbnb.yml
+
+RSpec/EmptyLineAfterFinalLet:
+  Enabled: false
+
+RSpec/EmptyLineAfterHook:
+  Enabled: false
+
+RSpec/EmptyLineAfterSubject:
+  Enabled: false

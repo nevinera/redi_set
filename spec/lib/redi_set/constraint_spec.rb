@@ -1,6 +1,7 @@
 require "spec_helper"
 
 RSpec.describe RediSet::Constraint do
+  subject(:constraint) { RediSet::Constraint.new(qualities: qualities) }
   let(:attribute) { RediSet::Attribute.new(name: "foo") }
   let(:q1) { RediSet::Quality.new(attribute: attribute, name: "a") }
   let(:q2) { RediSet::Quality.new(attribute: attribute, name: "b") }
@@ -8,19 +9,16 @@ RSpec.describe RediSet::Constraint do
   let(:qualities) { [q1, q2] }
 
   let(:uuid) { SecureRandom.uuid }
-  before { allow(SecureRandom).to receive(:uuid).and_return(uuid) }
-
-  before { allow(RediSet).to receive(:prefix).and_return("pre") }
-
-  subject(:constraint) do
-    RediSet::Constraint.new(qualities: qualities)
+  before do
+    allow(SecureRandom).to receive(:uuid).and_return(uuid)
+    allow(RediSet).to receive(:prefix).and_return("pre")
   end
 
   describe "#initialize" do
     subject(:init) { -> { RediSet::Constraint.new(qualities: qualities) } }
 
     context "with zero qualities" do
-      let(:qualities) { Array.new }
+      let(:qualities) { [] }
       it { is_expected.to raise_error(ArgumentError, /at least one quality/) }
     end
 
