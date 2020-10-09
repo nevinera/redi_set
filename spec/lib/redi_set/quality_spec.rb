@@ -35,7 +35,7 @@ RSpec.describe RediSet::Quality do
     end
 
     context "for an empty hash" do
-      let(:details) { Hash.new }
+      let(:details) { {} }
       it { is_expected.to eq([[], []]) }
     end
 

@@ -18,7 +18,7 @@ RSpec.describe RediSet::Constraint do
     subject(:init) { -> { RediSet::Constraint.new(qualities: qualities) } }
 
     context "with zero qualities" do
-      let(:qualities) { Array.new }
+      let(:qualities) { [] }
       it { is_expected.to raise_error(ArgumentError, /at least one quality/) }
     end
 
