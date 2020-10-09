@@ -5,7 +5,7 @@ require "yaml"
 require_relative "../lib/redi_set"
 
 query_text = ARGF.read
-query_data = YAML.load(query_text)
+query_data = YAML.safe_load(query_text)
 
 $stderr.puts "Performing this query:"
 query_data.each_pair do |attribute, qualities|
