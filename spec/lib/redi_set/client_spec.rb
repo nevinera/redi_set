@@ -66,7 +66,6 @@ RSpec.describe RediSet::Client do
       expect(fake_redis).to receive(:srem).with("rs.attr:b:d", id)
 
       expect(client.set_details!(id, details)).to eq(result)
-
     end
   end
 end
