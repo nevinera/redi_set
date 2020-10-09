@@ -44,8 +44,8 @@ RSpec.describe RediSet::Client do
       expect(RediSet::Attribute).to receive(:new).with(name: "foo").and_return(attribute)
 
       quality = instance_double(RediSet::Quality, name: "bar")
-      expect(RediSet::Quality).to receive(:new)
-        .with(attribute: attribute, name: "bar").and_return(quality)
+      expect(RediSet::Quality).to receive(:new).
+        with(attribute: attribute, name: "bar").and_return(quality)
 
       expect(quality).to receive(:set_all!).with(fake_redis, ids)
 
