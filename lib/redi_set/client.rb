@@ -1,7 +1,15 @@
 module RediSet
   class Client
-    def initialize(redis_config:)
-      @redis = Redis.new(redis_config)
+    attr_reader :redis
+
+    def initialize(redis: nil, redis_config: nil)
+      if redis
+        @redis = redis
+      elsif redis_config
+        @redis = Redis.new(redis_config)
+      else
+        fail ArgumentError, "redis or redis_config must be supplied to the RediSet::Client"
+      end
     end
 
     def match(constraint_hash)
