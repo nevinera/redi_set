@@ -21,3 +21,33 @@ With hash-backed sets, we can perform intersections very quickly - if we simply 
 attribute as multiple sets (the set of male cats and the set of female cats, for example),
 we can easily construct lists of records that match complex constraints with pure set union
 and intersection operations. And Redis has that data structure ready to go!
+
+## Usage
+
+```ruby
+require 'redis'
+require 'redi_set'
+
+redis = Redis.new(ENV['REDIS_URL'])
+client = RediSet::Client.new(redis: redis)
+
+# Get the data from elsewhere - csv, database, etc
+# and then write it into redis in bulk.
+client.set_all!(:color, :red, %w(a b c d e))
+client.set_all!(:color, :blue, %w(a p j k))
+client.set_all!(:size, :large, %w(a m n 1))
+client.set_all!(:size, :small, %w(p j d e))
+
+# Now we can query it by listing for each attribute which values are allowed.
+# We will union the allowed sets for each attribute, and then intersect the allowed sets
+# across attributes.
+client.match(color: :red)                 # gives %w(a b c d e)
+client.match(color: [:red, :blue])        # gives %w(a b c d e p j k)
+client.match(color: :red, size: :small)   # gives %w(d e)
+
+# And we can update data for an individual entity like this:
+client.set_details!(:a, {
+  color: { red: false, blue: false, green: true },
+  size: { small: false, large: true, enormous: true },
+})
+```
