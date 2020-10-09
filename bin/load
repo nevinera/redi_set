@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+require "redis"
+require_relative "../lib/redi_set"
+
+attribute_count = ARGV.shift&.to_i || 200
+qualities_per_attribute = ARGV.shift&.to_i || 2
+entity_count = ARGV.shift&.to_i || 100_000
+
+$stderr.puts "loading #{attribute_count} attributes"
+$stderr.puts "  with #{qualities_per_attribute} value each"
+$stderr.puts "  for #{entity_count} entities"
+
+redis = Redis.new
+rs = RediSet::Client.new(redis: redis)
+
+attribute_count.times do |attribute_offset|
+  attribute_name = "attr-#{attribute_offset + 1}"
+  allocations = {}
+  (1..entity_count).each do |n|
+    entity_name = "ent-#{n}"
+    quality_offset = Random.rand(qualities_per_attribute)
+    quality_name = "qual-#{quality_offset + 1}"
+
+    allocations[quality_name] ||= []
+    allocations[quality_name].append(entity_name)
+  end
+
+  allocations.each_pair do |quality_name, entity_ids|
+    rs.set_all!(attribute_name, quality_name, entity_ids)
+  end
+end
