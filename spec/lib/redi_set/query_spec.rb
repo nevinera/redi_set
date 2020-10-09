@@ -45,11 +45,12 @@ RSpec.describe RediSet::Query do
     end
 
     let(:constraints) { [con_foo, con_bar] }
-
     let(:results) { ["x", "y", "z"] }
     let(:redis) { instance_double(Redis) }
-    before { allow(redis).to receive(:multi).and_yield.and_return([results]) }
-    before { allow(redis).to receive(:sinter).and_return(results) }
+    before do
+      allow(redis).to receive(:multi).and_yield.and_return([results])
+      allow(redis).to receive(:sinter).and_return(results)
+    end
 
     context "for a simple constraint" do
       let(:constraints) { [con_bar] }
