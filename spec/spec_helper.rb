@@ -1,4 +1,5 @@
 require "redi_set"
+require "mock_redis"
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
