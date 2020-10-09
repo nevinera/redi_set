@@ -1,6 +1,22 @@
 module RediSet
   def self.prefix
-    "rs"
+    configuration.prefix
+  end
+
+  def self.configuration
+    @configuration ||= Configuration.new
+  end
+
+  def self.configure
+    yield(configuration)
+  end
+
+  class Configuration
+    attr_accessor :prefix
+
+    def initialize
+      @prefix = "rs"
+    end
   end
 end
 
